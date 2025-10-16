@@ -12,7 +12,7 @@ import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.structure.StructureFixingParser
 import ai.koog.prompt.structure.StructuredResponse
 import com.research.models.ResearchBriefSchema
-import com.research.prompts.BriefGenerationPrompt
+import com.research.prompts.ResearchPrompts  // ✅ Updated import
 
 /**
  * Agent that generates research briefs
@@ -22,22 +22,12 @@ class BriefGenerationAgent(apiKey: String) {
     private val promptExecutor = simpleOpenAIExecutor(apiKey)
 
     /**
-     * Conversation message holder
-     */
-    data class ConversationTurn(
-        val role: String, // "user" or "assistant"
-        val content: String
-    )
-
-    /**
      * Generate research brief using structured output
      */
-    suspend fun generateBrief(conversation: List<ConversationTurn>): String {
+    suspend fun generateBrief(conversationHistory: List<String>): String {
         val strategy = strategy<String, String>("brief-generation") {
-            // Setup node
             val setup by node<String, String> { input -> input }
 
-            // Node that requests structured output
             val briefNode by nodeLLMRequestStructured<ResearchBriefSchema>(
                 name = "generate-brief",
                 fixingParser = StructureFixingParser(
@@ -46,7 +36,6 @@ class BriefGenerationAgent(apiKey: String) {
                 )
             )
 
-            // Node that processes the result and extracts the research brief
             val processResult by node<Result<StructuredResponse<ResearchBriefSchema>>, String> { result ->
                 when {
                     result.isSuccess -> {
@@ -71,7 +60,7 @@ class BriefGenerationAgent(apiKey: String) {
 
         val agentConfig = AIAgentConfig(
             prompt = prompt("brief-generation") {
-                system(BriefGenerationPrompt.createBriefPrompt(conversation))
+                system(ResearchPrompts.createBriefPrompt(conversationHistory))  // ✅ Updated
             },
             model = OpenAIModels.CostOptimized.GPT4oMini,
             maxAgentIterations = 5

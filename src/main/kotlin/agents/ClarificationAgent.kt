@@ -12,7 +12,7 @@ import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.structure.StructureFixingParser
 import ai.koog.prompt.structure.StructuredResponse
 import com.research.models.ClarificationResponse
-import com.research.prompts.ClarificationPrompt
+import com.research.prompts.ResearchPrompts  // ✅ Updated import
 
 /**
  * Agent that handles clarification questions
@@ -22,22 +22,12 @@ class ClarificationAgent(apiKey: String) {
     private val promptExecutor = simpleOpenAIExecutor(apiKey)
 
     /**
-     * Conversation message holder
-     */
-    data class ConversationTurn(
-        val role: String, // "user" or "assistant"
-        val content: String
-    )
-
-    /**
      * Check if clarification is needed using structured output
      */
-    suspend fun checkClarification(conversation: List<ConversationTurn>): ClarificationResponse {
+    suspend fun checkClarification(conversationHistory: List<String>): ClarificationResponse {
         val strategy = strategy<String, ClarificationResponse>("clarification-check") {
-            // Setup node that provides the trigger message
             val setup by node<String, String> { input -> input }
 
-            // Node that requests structured output
             val clarifyNode by nodeLLMRequestStructured<ClarificationResponse>(
                 name = "check-clarification",
                 fixingParser = StructureFixingParser(
@@ -46,7 +36,6 @@ class ClarificationAgent(apiKey: String) {
                 )
             )
 
-            // Node that processes the result and extracts the structure
             val processResult by node<Result<StructuredResponse<ClarificationResponse>>, ClarificationResponse> { result ->
                 when {
                     result.isSuccess -> {
@@ -69,10 +58,9 @@ class ClarificationAgent(apiKey: String) {
             edge(processResult forwardTo nodeFinish)
         }
 
-        // Build prompt with conversation history
         val agentConfig = AIAgentConfig(
             prompt = prompt("clarification") {
-                system(ClarificationPrompt.createClarificationPrompt(conversation))
+                system(ResearchPrompts.createClarificationPrompt(conversationHistory))  // ✅ Updated
             },
             model = OpenAIModels.CostOptimized.GPT4oMini,
             maxAgentIterations = 5
@@ -85,7 +73,6 @@ class ClarificationAgent(apiKey: String) {
             agentConfig = agentConfig
         )
 
-        // Trigger with a simple message
         return agent.run("Check if clarification is needed")
     }
 }
