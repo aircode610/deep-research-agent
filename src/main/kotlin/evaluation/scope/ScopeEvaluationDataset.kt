@@ -1,18 +1,18 @@
 package com.research.evaluation.scope
 
 /**
- * Test case for scope evaluation
- */
-data class ScopeTestCase(
-    val id: String,
-    val input: String,
-    val expectedPoints: List<String>
-)
-
-/**
  * Dataset for evaluating the scoping workflow
  */
 object ScopeEvaluationDataset {
+    /**
+     * Test case for scope evaluation
+     */
+    data class ScopeTestCase(
+        val id: String,
+        val input: String,
+        val expectedPoints: List<String>
+    )
+
 
     val testCases = listOf(
         ScopeTestCase(

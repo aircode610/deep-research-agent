@@ -3,12 +3,13 @@ package com.research.evaluation.scope
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
+import com.research.evaluation.scope.ScopeEvaluationDataset.ScopeTestCase
 import kotlinx.coroutines.delay
 
 /**
  * Simple evaluator for scope workflow using direct LLM calls
  */
-class ScopeEvaluator(private val apiKey: String) {
+class ScopeEvaluator(apiKey: String) {
 
     private val executor = simpleOpenAIExecutor(apiKey)
 
@@ -28,7 +29,7 @@ class ScopeEvaluator(private val apiKey: String) {
     /**
      * Evaluate if a point is included in the brief
      */
-    suspend fun evaluatePoint(brief: String, expectedPoint: String): PointResult {
+    private suspend fun evaluatePoint(brief: String, expectedPoint: String): PointResult {
         val evaluationPrompt = prompt("evaluate-point") {
             system("""
                 You are evaluating if a research brief includes a specific point.
@@ -51,9 +52,9 @@ class ScopeEvaluator(private val apiKey: String) {
         val response = executor.execute(
             evaluationPrompt,
             OpenAIModels.Chat.GPT4o
-        ).first()  // ✅ Get first response
+        ).first()
 
-        val content = response.content  // ✅ Get content from response
+        val content = response.content
         val included = content.contains("INCLUDED: yes", ignoreCase = true)
         val reasoning = content.substringAfter("REASONING:", "").trim()
 
@@ -67,7 +68,7 @@ class ScopeEvaluator(private val apiKey: String) {
     /**
      * Evaluate a complete test case
      */
-    suspend fun evaluateTestCase(testCase: ScopeTestCase, generatedBrief: String): TestResult {
+    private suspend fun evaluateTestCase(testCase: ScopeTestCase, generatedBrief: String): TestResult {
         println("\nEvaluating ${testCase.id}...")
         println("Input: ${testCase.input}")
 
@@ -78,9 +79,9 @@ class ScopeEvaluator(private val apiKey: String) {
             pointResults.add(result)
 
             val status = if (result.included) "✓" else "✗"
-            println("  $status ${point}")
+            println("  $status $point")
 
-            delay(1000) // Rate limiting
+            delay(1000)
         }
 
         val score = pointResults.count { it.included }.toDouble() / pointResults.size
@@ -111,7 +112,7 @@ class ScopeEvaluator(private val apiKey: String) {
             val result = evaluateTestCase(testCase, brief)
             results.add(result)
 
-            delay(2000) // Rate limiting between tests
+            delay(2000)
         }
 
         printSummary(results)

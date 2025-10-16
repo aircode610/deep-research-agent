@@ -5,6 +5,6 @@ package com.research.models
  */
 data class ScopeResult(
     val researchBrief: String,
-    val conversationHistory: List<String>,  // Changed from List<ConversationTurn>
+    val conversationHistory: List<String>,
     val verification: String
 )

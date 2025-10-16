@@ -12,7 +12,7 @@ import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.structure.StructureFixingParser
 import ai.koog.prompt.structure.StructuredResponse
 import com.research.models.ResearchBriefSchema
-import com.research.prompts.ResearchPrompts  // ✅ Updated import
+import com.research.prompts.ResearchPrompts
 
 /**
  * Agent that generates research briefs
@@ -60,7 +60,7 @@ class BriefGenerationAgent(apiKey: String) {
 
         val agentConfig = AIAgentConfig(
             prompt = prompt("brief-generation") {
-                system(ResearchPrompts.createBriefPrompt(conversationHistory))  // ✅ Updated
+                system(ResearchPrompts.createBriefPrompt(conversationHistory))
             },
             model = OpenAIModels.CostOptimized.GPT4oMini,
             maxAgentIterations = 5

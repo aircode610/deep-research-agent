@@ -22,11 +22,9 @@ class ScopeWorkflow(apiKey: String) {
         val conversationHistory = mutableListOf<String>()
         conversationHistory.add("User: $initialQuery")
 
-        // Phase 1: Clarification using ClarificationAgent
         println("\n=== Phase 1: Clarification ===")
         val verification = runClarificationPhase(conversationHistory)
 
-        // Phase 2: Brief Generation using BriefGenerationAgent
         println("\n=== Phase 2: Brief Generation ===")
         val researchBrief = runBriefGenerationPhase(conversationHistory)
 
@@ -52,11 +50,9 @@ class ScopeWorkflow(apiKey: String) {
                 return clarificationResponse.verification
             }
 
-            // Need clarification
             println("\nAssistant: ${clarificationResponse.question}")
             conversationHistory.add("Assistant: ${clarificationResponse.question}")
 
-            // Get user response
             print("\nYou: ")
             val userResponse = readlnOrNull() ?: ""
             conversationHistory.add("User: $userResponse")

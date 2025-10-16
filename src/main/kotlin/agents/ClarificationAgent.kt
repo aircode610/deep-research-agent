@@ -12,7 +12,7 @@ import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.structure.StructureFixingParser
 import ai.koog.prompt.structure.StructuredResponse
 import com.research.models.ClarificationResponse
-import com.research.prompts.ResearchPrompts  // ✅ Updated import
+import com.research.prompts.ResearchPrompts
 
 /**
  * Agent that handles clarification questions
@@ -60,7 +60,7 @@ class ClarificationAgent(apiKey: String) {
 
         val agentConfig = AIAgentConfig(
             prompt = prompt("clarification") {
-                system(ResearchPrompts.createClarificationPrompt(conversationHistory))  // ✅ Updated
+                system(ResearchPrompts.createClarificationPrompt(conversationHistory))
             },
             model = OpenAIModels.CostOptimized.GPT4oMini,
             maxAgentIterations = 5
