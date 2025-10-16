@@ -20,14 +20,3 @@ data class ClarificationResponse(
     @property:LLMDescription("Verification message that we will start research (empty if clarification needed)")
     val verification: String = ""
 )
-
-/**
- * Structured output for research brief
- */
-@Serializable
-@SerialName("ResearchBrief")
-@LLMDescription("A detailed research question that will guide the research")
-data class ResearchBriefSchema(
-    @property:LLMDescription("A detailed and specific research question")
-    val researchBrief: String
-)

@@ -11,13 +11,13 @@ import ai.koog.prompt.executor.clients.openai.OpenAIModels
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.structure.StructureFixingParser
 import ai.koog.prompt.structure.StructuredResponse
-import com.research.models.ClarificationResponse
-import com.research.prompts.ClarificationPrompt
+import com.research.models.ResearchBriefSchema
+import com.research.prompts.BriefGenerationPrompt
 
 /**
- * Agent that handles clarification questions
+ * Agent that generates research briefs
  */
-class ClarificationAgent(apiKey: String) {
+class BriefGenerationAgent(apiKey: String) {
 
     private val promptExecutor = simpleOpenAIExecutor(apiKey)
 
@@ -30,27 +30,27 @@ class ClarificationAgent(apiKey: String) {
     )
 
     /**
-     * Check if clarification is needed using structured output
+     * Generate research brief using structured output
      */
-    suspend fun checkClarification(conversation: List<ConversationTurn>): ClarificationResponse {
-        val strategy = strategy<String, ClarificationResponse>("clarification-check") {
-            // Setup node that provides the trigger message
+    suspend fun generateBrief(conversation: List<ConversationTurn>): String {
+        val strategy = strategy<String, String>("brief-generation") {
+            // Setup node
             val setup by node<String, String> { input -> input }
 
             // Node that requests structured output
-            val clarifyNode by nodeLLMRequestStructured<ClarificationResponse>(
-                name = "check-clarification",
+            val briefNode by nodeLLMRequestStructured<ResearchBriefSchema>(
+                name = "generate-brief",
                 fixingParser = StructureFixingParser(
                     fixingModel = OpenAIModels.Chat.GPT4o,
                     retries = 2
                 )
             )
 
-            // Node that processes the result and extracts the structure
-            val processResult by node<Result<StructuredResponse<ClarificationResponse>>, ClarificationResponse> { result ->
+            // Node that processes the result and extracts the research brief
+            val processResult by node<Result<StructuredResponse<ResearchBriefSchema>>, String> { result ->
                 when {
                     result.isSuccess -> {
-                        result.getOrNull()?.structure
+                        result.getOrNull()?.structure?.researchBrief
                             ?: throw IllegalStateException("No structure in successful result")
                     }
                     result.isFailure -> {
@@ -64,15 +64,14 @@ class ClarificationAgent(apiKey: String) {
             }
 
             edge(nodeStart forwardTo setup)
-            edge(setup forwardTo clarifyNode)
-            edge(clarifyNode forwardTo processResult)
+            edge(setup forwardTo briefNode)
+            edge(briefNode forwardTo processResult)
             edge(processResult forwardTo nodeFinish)
         }
 
-        // Build prompt with conversation history
         val agentConfig = AIAgentConfig(
-            prompt = prompt("clarification") {
-                system(ClarificationPrompt.createClarificationPrompt(conversation))
+            prompt = prompt("brief-generation") {
+                system(BriefGenerationPrompt.createBriefPrompt(conversation))
             },
             model = OpenAIModels.CostOptimized.GPT4oMini,
             maxAgentIterations = 5
@@ -85,7 +84,6 @@ class ClarificationAgent(apiKey: String) {
             agentConfig = agentConfig
         )
 
-        // Trigger with a simple message
-        return agent.run("Check if clarification is needed")
+        return agent.run("Generate research brief")
     }
 }
