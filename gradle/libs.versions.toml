@@ -1,0 +1,15 @@
+[versions]
+koog = "0.5.0"
+kotlin = "2.1.10"
+serialization = "1.9.0"
+slf4j = "2.0.0"
+
+[libraries]
+koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
