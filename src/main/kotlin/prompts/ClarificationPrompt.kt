@@ -1,6 +1,6 @@
 package com.research.prompts
 
-import ai.koog.prompt.message.Message
+import com.research.agents.ClarificationAgent
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -10,14 +10,21 @@ object ClarificationPrompt {
         return LocalDate.now().format(DateTimeFormatter.ofPattern("EEE MMM d, yyyy"))
     }
 
-    fun createClarificationPrompt(messages: List<Message>): String {
-        val messagesStr = messages.joinToString("\n") { msg ->
-            when (msg) {
-                is Message.User -> "User: ${msg.content}"
-                is Message.Assistant -> "Assistant: ${msg.content}"
-                else -> msg.toString()
+    /**
+     * Format conversation turns into a string for the prompt
+     */
+    private fun formatConversation(conversation: List<ClarificationAgent.ConversationTurn>): String {
+        return conversation.joinToString("\n") { turn ->
+            when (turn.role) {
+                "user" -> "User: ${turn.content}"
+                "assistant" -> "Assistant: ${turn.content}"
+                else -> turn.content
             }
         }
+    }
+
+    fun createClarificationPrompt(conversation: List<ClarificationAgent.ConversationTurn>): String {
+        val messagesStr = formatConversation(conversation)
 
         return """
         These are the messages that have been exchanged so far from the user asking for the report:
@@ -55,14 +62,8 @@ object ClarificationPrompt {
         """.trimIndent()
     }
 
-    fun createBriefPrompt(messages: List<Message>): String {
-        val messagesStr = messages.joinToString("\n") { msg ->
-            when (msg) {
-                is Message.User -> "User: ${msg.content}"
-                is Message.Assistant -> "Assistant: ${msg.content}"
-                else -> msg.toString()
-            }
-        }
+    fun createBriefPrompt(conversation: List<ClarificationAgent.ConversationTurn>): String {
+        val messagesStr = formatConversation(conversation)
 
         return """
         You will be given a set of messages that have been exchanged so far between yourself and the user. 
