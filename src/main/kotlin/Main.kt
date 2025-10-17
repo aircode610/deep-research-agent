@@ -1,4 +1,4 @@
-package com.research
+//package com.research
 //
 //import com.research.evaluation.scope.ScopeEvaluationRunner
 //import com.research.workflows.ScopeWorkflow
@@ -33,39 +33,59 @@ package com.research
 //    println("\n" + "=".repeat(50))
 //}
 
-import com.research.agents.SupervisorAgent
-import com.research.agents.ResearcherAgent
+package com.research
 
-suspend fun main() {
+import com.research.agents.FinalReportAgent
+import com.research.agents.ResearcherAgent
+import com.research.agents.SupervisorAgent
+import kotlinx.coroutines.runBlocking
+
+fun main() = runBlocking {
     val openaiKey = System.getenv("OPENAI_API_KEY") ?: error("Set OPENAI_API_KEY")
     val tavilyKey = System.getenv("TAVILY_API_KEY") ?: error("Set TAVILY_API_KEY")
 
-    // Create researcher agent
+    println("=== Deep Research Agent - Full Pipeline ===\n")
+
+    // Test research brief
+    val researchBrief = "Compare the AI safety approaches of OpenAI and Anthropic"
+
+    // Step 1: Create agents
     val researcherAgent = ResearcherAgent(
         apiKey = openaiKey,
         tavilyApiKey = tavilyKey
     )
 
-    // Create supervisor
-    val supervisor = SupervisorAgent(
+    val supervisorAgent = SupervisorAgent(
         apiKey = openaiKey,
         researcherAgent = researcherAgent,
-        maxConcurrentResearchers = 3,
-        maxIterations = 12
+        maxConcurrentResearchers = 2, // Reduced for rate limits
+        maxIterations = 15
     )
 
-    // Run supervised research
-    val result = supervisor.research(
-        researchBrief = "Compare the AI safety approaches of OpenAI and Anthropic"
-    )
+    val reportAgent = FinalReportAgent(apiKey = openaiKey)
+
+    // Step 2: Execute supervised research
+    println("PHASE 1: RESEARCH")
+    println("=".repeat(80))
+    val supervisorResult = supervisorAgent.research(researchBrief)
 
     println("\n" + "=".repeat(80))
-    println("SUPERVISOR RESULTS")
+    println("RESEARCH PHASE COMPLETE")
+    println("Total findings: ${supervisorResult.notes.size}")
+    println("=".repeat(80) + "\n")
+
+    // Step 3: Generate final report
+    println("PHASE 2: REPORT GENERATION")
     println("=".repeat(80))
-    println("Total research notes: ${result.notes.size}")
-    result.notes.forEachIndexed { index : Int, note : String ->
-        println("\n--- Note ${index + 1} ---")
-        println(note.take(200))
-        println("...")
-    }
+    val finalReport = reportAgent.generateReport(
+        researchBrief = researchBrief,
+        findings = supervisorResult.notes
+    )
+
+    // Step 4: Display final report
+    println("\n" + "=".repeat(80))
+    println("FINAL RESEARCH REPORT")
+    println("=".repeat(80) + "\n")
+    println(finalReport)
+    println("\n" + "=".repeat(80))
 }
