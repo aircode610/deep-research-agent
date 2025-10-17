@@ -1,4 +1,4 @@
-//package com.research
+package com.research
 //
 //import com.research.evaluation.scope.ScopeEvaluationRunner
 //import com.research.workflows.ScopeWorkflow
@@ -33,34 +33,39 @@
 //    println("\n" + "=".repeat(50))
 //}
 
-package com.research
-
+import com.research.agents.SupervisorAgent
 import com.research.agents.ResearcherAgent
-import kotlinx.coroutines.runBlocking
 
-fun main() = runBlocking {
-    val openaiKey = System.getenv("OPENAI_API_KEY")
-        ?: error("Set OPENAI_API_KEY")
-    val tavilyKey = System.getenv("TAVILY_API_KEY")
-        ?: error("Set TAVILY_API_KEY")
+suspend fun main() {
+    val openaiKey = System.getenv("OPENAI_API_KEY") ?: error("Set OPENAI_API_KEY")
+    val tavilyKey = System.getenv("TAVILY_API_KEY") ?: error("Set TAVILY_API_KEY")
 
-    println("=== Testing Researcher Agent ===\n")
-
-    val researcher = ResearcherAgent(
+    // Create researcher agent
+    val researcherAgent = ResearcherAgent(
         apiKey = openaiKey,
         tavilyApiKey = tavilyKey
     )
 
-    // Test with a simple research question
-    val result = researcher.research(
-        researchTopic = "What are the latest developments in AI agents in 2025? Focus on key innovations and major companies."
+    // Create supervisor
+    val supervisor = SupervisorAgent(
+        apiKey = openaiKey,
+        researcherAgent = researcherAgent,
+        maxConcurrentResearchers = 3,
+        maxIterations = 12
+    )
+
+    // Run supervised research
+    val result = supervisor.research(
+        researchBrief = "Compare the AI safety approaches of OpenAI and Anthropic"
     )
 
     println("\n" + "=".repeat(80))
-    println("FINAL COMPRESSED RESEARCH")
+    println("SUPERVISOR RESULTS")
     println("=".repeat(80))
-    println(result.compressedResearch)
-    println("\n" + "=".repeat(80))
-
-    println("\nRaw notes collected: ${result.rawNotes.size} entries")
+    println("Total research notes: ${result.notes.size}")
+    result.notes.forEachIndexed { index : Int, note : String ->
+        println("\n--- Note ${index + 1} ---")
+        println(note.take(200))
+        println("...")
+    }
 }
