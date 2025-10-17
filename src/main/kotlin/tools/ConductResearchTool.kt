@@ -27,21 +27,21 @@ class ConductResearchTool(
 
     override suspend fun doExecute(args: Args): String {
         println("\n" + "=".repeat(80))
-        println("🔍 DELEGATING RESEARCH TO SUB-AGENT")
+        println("DELEGATING RESEARCH TO SUB-AGENT")
         println("Topic: ${args.researchTopic.take(100)}...")
         println("=".repeat(80))
 
         return try {
             val result = researcherAgent.research(args.researchTopic)
 
-            println("✅ Sub-agent completed research")
+            println("Sub-agent completed research")
             println("=".repeat(80) + "\n")
 
             onResearchComplete(result.compressedResearch)
             result.compressedResearch
 
         } catch (e: Exception) {
-            val errorMsg = "⚠️ Error during delegated research: ${e.message}"
+            val errorMsg = "Error during delegated research: ${e.message}"
             println(errorMsg)
             println("=".repeat(80) + "\n")
             errorMsg
@@ -75,37 +75,35 @@ class ConductMultipleResearchTool(
     """.trimIndent()
 
     override suspend fun doExecute(args: Args): String = coroutineScope {
-        val topics = args.researchTopics.take(3) // Enforce max
+        val topics = args.researchTopics.take(3)
 
         println("\n" + "=".repeat(80))
-        println("🔍 LAUNCHING ${topics.size} PARALLEL RESEARCH AGENTS")
+        println("LAUNCHING ${topics.size} PARALLEL RESEARCH AGENTS")
         topics.forEachIndexed { index, topic ->
             println("${index + 1}. ${topic.take(80)}...")
         }
         println("=".repeat(80))
 
         try {
-            // Launch all research tasks in parallel
             val results = topics.map { topic ->
                 async {
-                    println("▶️  Starting research on: ${topic.take(50)}...")
+                    println("Starting research on: ${topic.take(50)}...")
                     researcherAgent.research(topic)
                 }
             }.awaitAll()
 
-            println("\n✅ All ${results.size} parallel research tasks completed")
+            println("\nAll ${results.size} parallel research tasks completed")
             println("=".repeat(80) + "\n")
 
             val compressed = results.map { it.compressedResearch }
             onResearchComplete(compressed)
 
-            // Return combined results
             compressed.mapIndexed { index, finding ->
                 "## Finding ${index + 1}: ${topics[index].take(50)}...\n\n$finding"
             }.joinToString("\n\n" + "=".repeat(80) + "\n\n")
 
         } catch (e: Exception) {
-            val errorMsg = "⚠️ Error during parallel research: ${e.message}"
+            val errorMsg = "Error during parallel research: ${e.message}"
             println(errorMsg)
             println("=".repeat(80) + "\n")
             errorMsg

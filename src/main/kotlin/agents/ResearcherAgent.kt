@@ -48,7 +48,6 @@ class ResearcherAgent(
         searchQueries: MutableList<String>,
         searchResults: MutableList<String>
     ): String {
-        // Create Tavily tool with callback to capture results
         val tavilyTool = TavilySearchTool(
             apiKey = tavilyApiKey,
             onSearchExecuted = { query, result ->
@@ -145,7 +144,7 @@ class ResearcherAgent(
             return compressed
 
         } catch (e: Exception) {
-            println("⚠Compression failed: ${e.message}")
+            println("Compression failed: ${e.message}")
             println("Returning uncompressed research result")
             return "# Research Findings (Uncompressed)\n\n$researchResult"
         }
