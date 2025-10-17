@@ -12,23 +12,19 @@ import com.research.prompts.FinalReportPrompts
  * Agent responsible for synthesizing research findings into a comprehensive final report.
  */
 class FinalReportAgent(
-    private val apiKey: String
+    apiKey: String
 ) {
     private val promptExecutor = simpleOpenAIExecutor(apiKey)
 
     /**
      * Generate final report from research brief and collected findings.
-     *
-     * @param researchBrief The original research question/brief
-     * @param findings List of compressed research findings from sub-agents
-     * @return Formatted markdown report with sources
      */
     suspend fun generateReport(
         researchBrief: String,
         findings: List<String>
     ): String {
         println("\n" + "=".repeat(80))
-        println("📝 FINAL REPORT: Synthesizing ${findings.size} research findings")
+        println("FINAL REPORT: Synthesizing ${findings.size} research findings")
         println("=".repeat(80) + "\n")
 
         try {
@@ -44,26 +40,26 @@ class FinalReportAgent(
                         )
                     )
                 },
-                model = OpenAIModels.Chat.GPT4o, // Use GPT-4 for quality reports
-                maxAgentIterations = 3 // Single-shot generation
+                model = OpenAIModels.Chat.GPT5,
+                maxAgentIterations = 5
             )
 
             val agent = AIAgent(
                 promptExecutor = promptExecutor,
                 agentConfig = agentConfig,
-                toolRegistry = ToolRegistry.EMPTY // No tools needed
+                toolRegistry = ToolRegistry.EMPTY
             )
 
             val report = agent.run("")
 
             println("\n" + "=".repeat(80))
-            println("✅ FINAL REPORT: Generation complete")
+            println("FINAL REPORT: Generation complete")
             println("=".repeat(80) + "\n")
 
             return report
 
         } catch (e: Exception) {
-            println("⚠️ Error generating final report: ${e.message}")
+            println("Error generating final report: ${e.message}")
             throw e
         }
     }

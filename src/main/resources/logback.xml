@@ -1,0 +1,19 @@
+<configuration>
+    <!-- Only show WARN and ERROR from Koog -->
+    <logger name="ai.koog" level="WARN"/>
+
+    <!-- Your application logs can still be INFO -->
+    <logger name="com.research" level="INFO"/>
+
+    <!-- Console output -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger -->
+    <root level="WARN">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

@@ -34,6 +34,10 @@ class ThinkTool : SimpleTool<ThinkTool.Args>() {
         2. Gap assessment - What crucial information is still missing?
         3. Quality evaluation - Do I have sufficient evidence/examples for a good answer?
         4. Strategic decision - Should I continue searching or provide my answer?
+        
+        Hard Limits:
+        1. After analyzing make 1-2 new points if there aren't many information missing.
+        2. If the gap is big make at most 3 new points.
     """.trimIndent()
 
     override suspend fun doExecute(args: Args): String {
