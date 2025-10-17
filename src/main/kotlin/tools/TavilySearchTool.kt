@@ -15,7 +15,10 @@ import io.ktor.serialization.kotlinx.json.*
 /**
  * Tavily Search Tool API
  */
-class TavilySearchTool(private val apiKey: String) : SimpleTool<TavilySearchTool.Args>() {
+class TavilySearchTool(
+    private val apiKey: String,
+    private val onSearchExecuted: ((query: String, result: String) -> Unit)? = null
+) : SimpleTool<TavilySearchTool.Args>() {
 
     @Serializable
     data class Args(
@@ -68,7 +71,11 @@ class TavilySearchTool(private val apiKey: String) : SimpleTool<TavilySearchTool
             }
 
             val jsonResponse: JsonObject = response.body()
-            formatSearchResults(jsonResponse)
+            val formattedResult = formatSearchResults(jsonResponse)
+
+            onSearchExecuted?.invoke(args.query, formattedResult)
+
+            formattedResult
 
         } catch (e: Exception) {
             "Error performing search: ${e.message}"
