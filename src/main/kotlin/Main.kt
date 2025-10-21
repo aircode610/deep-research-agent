@@ -1,5 +1,6 @@
 package com.research
 
+import com.research.evaluation.scope.ScopeEvaluationRunner
 import com.research.workflows.ReportWorkflow
 import com.research.workflows.ResearchWorkflow
 import com.research.workflows.ScopeWorkflow
@@ -15,6 +16,10 @@ fun main() = runBlocking {
         ?: error("Please set OPENAI_API_KEY environment variable")
     val tavilyKey = System.getenv("TAVILY_API_KEY")
         ?: error("Please set TAVILY_API_KEY environment variable")
+
+    // Scope evaluator (uncomment this part to run evaluation for scoping phase)
+//    val scopeEvaluator = ScopeEvaluationRunner(openaiKey);
+//    scopeEvaluator.run();
 
     // Research topic
     print("Enter your research topic: ")
@@ -40,7 +45,7 @@ fun main() = runBlocking {
         val researchWorkflow = ResearchWorkflow(
             apiKey = openaiKey,
             tavilyApiKey = tavilyKey,
-            maxConcurrentResearchers = 2,
+            maxConcurrentResearchers = 2, // change this based on your rate limit, it hits max pretty easily unless you have a high limit I don't(
             maxIterations = 20
         )
         val researchResult = researchWorkflow.executeResearch(scopeResult.researchBrief)
